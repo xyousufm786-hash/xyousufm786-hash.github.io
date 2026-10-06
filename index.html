@@ -1,0 +1,464 @@
+<title>Yousuf Muhammad</title>
+<meta name="description" content="Yousuf Muhammad: founder of Study Nest Malaysia, Business Analytics student at INTI, web designer and AI builder.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;500;600;800;900&family=Overpass+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one left-aligned column (max 1080px). A split-flap departures board is the hero;
+   everything after it is quiet wayfinding: plain rows, hairlines, yellow sign panels for emphasis. */
+:root{
+  --bg:#F3F5F8; --fg:#121821; --muted:#5A6577; --line:#D8DEE7; --panel:#FFFFFF;
+  --signal:#FFC72C; --on-signal:#15120A; --board:#101722; --tile:#1A2331; --tile-edge:#0A0F17;
+  --flap:#FFD45C; --go:#4CD98B; --link:#0B4FA8;
+  --display:"Overpass","Helvetica Neue",Arial,sans-serif;
+  --body:"Overpass","Helvetica Neue",Arial,sans-serif;
+  --mono:"Overpass Mono","SFMono-Regular",Consolas,monospace;
+  --step-0:1rem; --step-1:1.25rem; --step-2:1.6rem; --step-3:2.3rem; --step-4:clamp(2.6rem,6.4vw,4.6rem);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B111B; --fg:#E7ECF3; --muted:#93A0B3; --line:#1F2938; --panel:#111926;
+  --board:#060A10; --tile:#141C29; --tile-edge:#03060A; --link:#7DB4FF; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B111B; --fg:#E7ECF3; --muted:#93A0B3; --line:#1F2938; --panel:#111926;
+  --board:#060A10; --tile:#141C29; --tile-edge:#03060A; --link:#7DB4FF; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 var(--step-0)/1.6 var(--body);margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:0 64px}
+a{color:var(--link);text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:3px solid var(--signal);outline-offset:3px;border-radius:2px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h2{font-size:var(--step-3);font-weight:900;letter-spacing:-.01em;line-height:1.1}
+h3{font-size:var(--step-1);font-weight:800;line-height:1.25}
+p{margin:0;max-width:65ch}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:14px;flex-wrap:wrap}
+.mark{display:flex;align-items:center;gap:10px;font:900 1.15rem var(--display);color:var(--fg);text-decoration:none}
+.mark i{display:grid;place-items:center;min-width:30px;height:30px;padding-inline:4px;font-size:.85rem;background:var(--signal);color:var(--on-signal);font-style:normal;font-weight:900;border-radius:4px}
+nav{display:flex;gap:18px;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;font-weight:600;font-size:.95rem}
+nav a:hover{color:var(--fg)}
+
+/* hero */
+.hero{display:grid;gap:28px;padding-block:56px 40px}
+.hero h1{font-size:var(--step-4);font-weight:900;line-height:1;letter-spacing:-.02em}
+.hero h1 small{display:block;font-size:.42em;font-weight:600;color:var(--muted);letter-spacing:0;margin-top:10px}
+.lede{font-size:var(--step-1);line-height:1.5;color:var(--fg)}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;font:700 .98rem var(--body);border-radius:4px;text-decoration:none;border:2px solid var(--fg);color:var(--fg);background:transparent;cursor:pointer}
+.btn.sign{background:var(--signal);border-color:var(--signal);color:var(--on-signal)}
+.btn:hover{transform:translateY(-1px)}
+
+/* departures board */
+.board{--cells:48;--avail:calc(min(100vw,1080px) - 2 * clamp(16px,4vw,40px) - 2 * clamp(12px,2.5vw,24px) - var(--slack,48px));
+  --t:min(22px, calc(var(--avail) / var(--cells) - 2px));
+  background:var(--board);border-radius:10px;padding:18px clamp(12px,2.5vw,24px) 20px;color:var(--flap);overflow:hidden}
+.board-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;color:#C9D3E2;font:700 .78rem var(--mono);letter-spacing:.12em;margin-bottom:12px;flex-wrap:wrap}
+.board-head b{color:var(--flap);font-size:1rem;letter-spacing:.18em}
+.rows{display:grid;gap:7px;min-width:min-content}
+.row{display:flex;gap:14px;align-items:center}
+.cols{color:#7F8BA0;font:700 .7rem var(--mono);letter-spacing:.14em}
+.cols span{display:inline-block}
+.field{display:flex;gap:2px}
+.field.status{color:var(--go)}
+.ch{display:inline-grid;place-items:center;width:var(--t);height:calc(var(--t) * 1.36);background:var(--tile);border-bottom:1px solid var(--tile-edge);border-radius:2px;font:700 calc(var(--t) * .74) var(--mono);position:relative;overflow:hidden}
+.ch::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--tile-edge);opacity:.9}
+.f-role{--w:18}.f-at{--w:20}.f-status{--w:10}
+.cols .f-role{width:calc(18 * (var(--t) + 2px) - 2px)}
+.cols .f-at{width:calc(20 * (var(--t) + 2px) - 2px)}
+.plain{font:700 1rem var(--mono);letter-spacing:.06em;white-space:pre}
+@media (max-width:640px){.hide-sm{display:none!important}.board{--cells:18;--slack:4px}.rows{gap:12px}.row{flex-wrap:wrap;gap:3px}.cols{display:none}nav{gap:14px}nav a{font-size:.88rem}}
+
+/* sections */
+section{padding-block:56px;border-top:1px solid var(--line);display:grid;gap:28px}
+.sec-head{display:grid;gap:10px}
+.sec-head p{color:var(--muted)}
+
+/* Study Nest feature */
+.feature{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:start}
+.feature .copy{display:grid;gap:14px;min-width:0}
+.sign{background:var(--signal);color:var(--on-signal);border-radius:6px;padding:22px;display:grid;gap:14px}
+.sign h3{font-size:var(--step-2)}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px}
+.facts div{display:grid;gap:2px}
+.facts strong{font:900 var(--step-2)/1 var(--display);font-variant-numeric:tabular-nums}
+.facts span{font-size:.9rem;font-weight:600}
+.partners{color:var(--muted);font-size:.95rem}
+
+/* lists of ventures/projects */
+.list{display:grid;border-top:1px solid var(--line)}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 24px;padding-block:20px;border-bottom:1px solid var(--line)}
+.item .main{display:grid;gap:6px;min-width:0}
+.item p{color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tag{font-size:.8rem;font-weight:600;padding:2px 9px;border:1px solid var(--line);border-radius:99px;color:var(--muted);background:var(--panel)}
+.state{align-self:start;font-size:.82rem;font-weight:800;padding:3px 10px;border-radius:3px;white-space:nowrap}
+.state.live{background:var(--signal);color:var(--on-signal)}
+.state.done{border:1.5px solid var(--fg);color:var(--fg)}
+.state.wip{border:1.5px dashed var(--muted);color:var(--muted)}
+.item .links{display:flex;gap:14px;flex-wrap:wrap;font-weight:700;font-size:.92rem;margin-top:4px}
+
+/* research */
+.paper{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--signal);border-radius:4px;padding:24px;display:grid;gap:10px}
+.paper .award{font-weight:800}
+.small-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.note{border:1px solid var(--line);border-radius:4px;padding:18px;display:grid;gap:6px;background:var(--panel)}
+.note p{color:var(--muted);font-size:.95rem}
+
+/* awards */
+.awards{display:grid;border-top:1px solid var(--line)}
+.award-row{display:grid;grid-template-columns:9rem minmax(0,1fr);gap:24px;align-items:start;padding-block:22px;border-bottom:1px solid var(--line)}
+.place{font:900 var(--step-2)/1 var(--display);letter-spacing:-.01em}
+.place small{display:block;font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:0;margin-top:6px}
+.award-row .main{display:grid;gap:6px;min-width:0}
+.award-row p{color:var(--muted)}
+.cred{font-size:.85rem;color:var(--muted);word-break:break-all}
+.cred span{user-select:all;color:var(--fg)}
+@media (max-width:560px){.award-row{grid-template-columns:1fr;gap:8px}}
+
+/* clients */
+.clients{display:flex;flex-wrap:wrap;gap:10px 28px;font:800 var(--step-1)/1.3 var(--display);color:var(--fg)}
+.clients span{white-space:nowrap}
+.clients span:nth-child(3n+2){color:var(--muted)}
+
+/* skills */
+.skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
+.skills div{display:grid;gap:8px;align-content:start}
+.skills h3{font-size:1rem}
+.skills p{color:var(--muted);font-size:.95rem}
+
+/* journey route */
+.route{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;position:relative;margin-top:8px}
+.route::before{content:"";position:absolute;left:12px;right:12px;top:11px;border-top:2px dashed var(--muted);opacity:.6}
+.stop{position:relative;display:grid;gap:6px;padding-right:12px;min-width:0}
+.dot{width:24px;height:24px;border-radius:50%;background:var(--bg);border:3px solid var(--fg);position:relative;z-index:1}
+.stop.now .dot{background:var(--signal);border-color:var(--signal)}
+.stop.next .dot{border-style:dashed;border-color:var(--muted)}
+.code{font:900 var(--step-3)/1 var(--display);letter-spacing:.02em}
+.stop.next .code{color:var(--muted)}
+.stop p{color:var(--muted);font-size:.93rem}
+@media (max-width:720px){
+  .feature{grid-template-columns:1fr}
+  .route{grid-template-columns:1fr;gap:22px}
+  .route::before{left:11px;right:auto;top:12px;bottom:12px;border-top:0;border-left:2px dashed var(--muted)}
+  .stop{grid-template-columns:24px 1fr;column-gap:16px}
+  .stop .dot{grid-row:span 3}
+  .item{grid-template-columns:1fr}
+}
+
+/* contact */
+.contact{display:grid;gap:18px}
+.contact h2{font-size:var(--step-4)}
+.mail{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.mail code{font:700 var(--step-1) var(--body);user-select:all;word-break:break-all}
+.socials{display:flex;gap:10px;flex-wrap:wrap}
+footer{color:var(--muted);font-size:.88rem;padding-top:24px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.btn:hover{transform:none}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="#top"><i>YM</i>Yousuf Muhammad</a>
+    <nav aria-label="Sections">
+      <a href="#ventures">Ventures</a><a href="#projects">Projects</a><a href="#awards">Awards</a><a href="#research">Research</a><a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+  <div class="hero">
+    <h1>Yousuf Muhammad<small>Founder · Data &amp; AI · Web</small></h1>
+    <p class="lede">I run Study Nest Malaysia, an education consultancy that helps students from around the world get into Malaysian universities. I also study Business Analytics at INTI, design websites for clients from Florida to Kuwait to Karachi, and build data and AI tools.</p>
+    <div class="cta">
+      <a class="btn sign" href="#projects">See my work</a>
+      <a class="btn" href="#contact">Get in touch</a>
+    </div>
+
+    <div class="board" aria-label="What I'm doing now">
+      <div class="board-head"><b>DEPARTURES</b><span>NOW BOARDING · KUALA LUMPUR</span></div>
+      <div class="rows" id="rows">
+        <div class="row cols" aria-hidden="true"><span class="f-role">ROLE</span><span class="f-at hide-sm">WHERE</span><span>STATUS</span></div>
+        <div class="row" data-role="FOUNDER & CEO" data-at="STUDY NEST MALAYSIA" data-status="ACTIVE"><span class="plain">FOUNDER &amp; CEO · STUDY NEST MALAYSIA · ACTIVE</span></div>
+        <div class="row" data-role="BUSINESS ANALYTICS" data-at="INTI UNIVERSITY" data-status="FINAL YEAR"><span class="plain">BUSINESS ANALYTICS · INTI UNIVERSITY · FINAL YEAR</span></div>
+        <div class="row" data-role="WEB DESIGN" data-at="FREELANCE" data-status="OPEN"><span class="plain">WEB DESIGN · FREELANCE · OPEN</span></div>
+        <div class="row" data-role="DATA ANALYTICS" data-at="PORTFOLIO PROJECTS" data-status="12 BUILT"><span class="plain">DATA ANALYTICS · PORTFOLIO PROJECTS · 12 BUILT</span></div>
+        <div class="row" data-role="HACKATHON" data-at="NASA SPACE APPS KL" data-status="3RD PLACE"><span class="plain">HACKATHON · NASA SPACE APPS KL · 3RD PLACE</span></div>
+        <div class="row" data-role="AI RESEARCH" data-at="FEDERATED LEARNING" data-status="BRONZE 26"><span class="plain">AI RESEARCH · FEDERATED LEARNING · BRONZE 26</span></div>
+      </div>
+    </div>
+  </div>
+
+  <section id="ventures">
+    <div class="sec-head">
+      <h2>Ventures</h2>
+      <p>Businesses I've started or run. Most of what I know about marketing, sales and clients came from these.</p>
+    </div>
+
+    <div class="feature">
+      <div class="copy">
+        <h3>Study Nest Malaysia</h3>
+        <p>An education consultancy placing international students into Malaysian universities, from Foundation through PhD, DBA and MBBS. We handle admissions, EMGS visa processing and flight bookings below market rates, and students only pay once their offer letter and flight are confirmed.</p>
+        <p>I built the whole brand: the website, the owl identity, Instagram content and reels, Meta ad campaigns across several international markets, a referral-agent network, and a fees database that maps 96 fee documents across 31 institutions into one workbook.</p>
+        <p class="partners">Partners include INTI, Taylor's, Sunway, APU, MMU, MAHSA, SEGi, LSBF, City University, Lincoln, IUKL and public universities.</p>
+        <div class="tags"><span class="tag">Founder</span><span class="tag">Meta Ads</span><span class="tag">Brand &amp; web</span><span class="tag">Partnerships</span></div>
+      </div>
+      <div class="sign" aria-label="Study Nest in numbers">
+        <h3>In numbers</h3>
+        <div class="facts">
+          <div><strong>31</strong><span>institutions in the fees database</span></div>
+          <div><strong>96</strong><span>fee documents mapped</span></div>
+          <div><strong>3</strong><span>services: admissions, visas, flights</span></div>
+          <div><strong>PhD</strong><span>levels from Foundation up</span></div>
+        </div>
+        <a class="btn" style="border-color:var(--on-signal);color:var(--on-signal);justify-self:start" href="https://www.instagram.com/studynestmalaysia/" target="_blank" rel="noopener">@studynestmalaysia on Instagram</a>
+      </div>
+    </div>
+
+    <div class="list">
+      <div class="item"><div class="main"><h3>Squarehouse.me</h3><p>Web development for small and medium businesses in Kuwait.</p></div><span class="state done">Established</span></div>
+      <div class="item"><div class="main"><h3>FreshCuts.pk</h3><p>Seafood delivery in Karachi.</p></div><span class="state done">Established</span></div>
+      <div class="item"><div class="main"><h3>Next Caterers</h3><p>Catering brokerage in Karachi. Brand launch and website in progress.</p></div><span class="state wip">Launching</span></div>
+      <div class="item"><div class="main"><h3>RUQQS</h3><p>Streetwear e-commerce brand.</p></div><span class="state done">Venture</span></div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="sec-head">
+      <h2>Projects</h2>
+      <p>Data, AI and software projects from my degree and my own experiments. Code is on GitHub.</p>
+    </div>
+    <div class="list">
+      <div class="item"><div class="main">
+        <h3>Explainable anti-money-laundering detection</h3>
+        <p>My final year project. Anomaly detection to flag suspicious transactions, plus explainable AI so an analyst can see why each one was flagged.</p>
+        <div class="tags"><span class="tag">Anomaly detection</span><span class="tag">XAI</span><span class="tag">Final year project</span></div>
+      </div><span class="state wip">In progress</span></div>
+
+      <div class="item"><div class="main">
+        <h3>INTI AI Assistant (RAG)</h3>
+        <p>A chatbot that answers student questions from a 2,000-record university knowledge base. It retrieves the top 3 matching records, answers only from them, shows its sources with similarity scores, and says so when the answer isn't in the data.</p>
+        <div class="tags"><span class="tag">RAG</span><span class="tag">Ollama</span><span class="tag">FAISS</span><span class="tag">Gradio</span></div>
+        <div class="links"><a data-repo="inti-rag-assistant" href="#">Code</a></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>StudyMate</h3>
+        <p>A web study assistant you can talk to. It builds study plans, explains topics step by step, quizzes you and marks your answers, and reads its replies aloud.</p>
+        <div class="tags"><span class="tag">Flask</span><span class="tag">Llama 3.2</span><span class="tag">Speech recognition</span><span class="tag">Text-to-speech</span></div>
+        <div class="links"><a data-repo="studymate-voice-assistant" href="#">Code</a></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>TripMate travel planner</h3>
+        <p>Turns a destination, budget, trip length and travel style into a day-by-day itinerary with hotels, transport and a budget breakdown. Runs as a desktop app with voice input and as a Telegram bot.</p>
+        <div class="tags"><span class="tag">Tkinter</span><span class="tag">Telegram Bot API</span><span class="tag">Ollama</span><span class="tag">Voice</span></div>
+        <div class="links"><a data-repo="tripmate-travel-planner" href="#">Code</a></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>Fire detection alerts</h3>
+        <p>A YOLOv8 model watches a webcam or video feed and sends a photo alert to Telegram the moment it sees fire, with a cooldown so it doesn't spam.</p>
+        <div class="tags"><span class="tag">YOLOv8</span><span class="tag">OpenCV</span><span class="tag">Telegram</span></div>
+        <div class="links"><a data-repo="yolo-fire-alert-telegram" href="#">Code</a></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>Transaction fraud &amp; anomaly detection</h3>
+        <p>Compares Isolation Forest (no labels) with Random Forest (labels) on 20,000 transactions, tunes the alert threshold to the review team's capacity, and explains why each transaction was flagged.</p>
+        <div class="tags"><span class="tag">Anomaly detection</span><span class="tag">scikit-learn</span><span class="tag">Explainability</span></div>
+        <div class="links"><a data-repo="transaction-anomaly-detection" href="#">Code</a></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>Customer segmentation with RFM</h3>
+        <p>Segments an online store's customers by recency, frequency and spend with K-Means, then turns each segment into a marketing action. The top 8% of customers bring in half the revenue.</p>
+        <div class="tags"><span class="tag">K-Means</span><span class="tag">RFM</span><span class="tag">Marketing analytics</span></div>
+        <div class="links"><a data-repo="customer-segmentation-rfm" href="#">Code</a></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>Daily sales forecasting</h3>
+        <p>Forecasts 90 days of retail sales from calendar and lag features. The best model cuts error by more than half compared with a "same day last year" baseline (MAPE 6.0% vs 14.5%).</p>
+        <div class="tags"><span class="tag">Time series</span><span class="tag">Gradient boosting</span><span class="tag">Ridge</span></div>
+        <div class="links"><a data-repo="sales-demand-forecasting" href="#">Code</a></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>Breast cancer diagnosis classifier</h3>
+        <p>Compares four classifiers on the Wisconsin diagnostic dataset and tunes the decision threshold to catch 98% of malignant cases, because a missed cancer costs far more than a follow-up test.</p>
+        <div class="tags"><span class="tag">Classification</span><span class="tag">SVM</span><span class="tag">Model evaluation</span></div>
+        <div class="links"><a data-repo="breast-cancer-diagnosis-ml" href="#">Code</a></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>Jet2Vacations holiday recommender</h3>
+        <p>A hybrid recommender that combines collaborative filtering (SVD) with content similarity (TF-IDF), shown in a Gradio dashboard.</p>
+        <div class="tags"><span class="tag">Recommender systems</span><span class="tag">SVD</span><span class="tag">TF-IDF</span></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>ClearCheck</h3>
+        <p>A fake news detection system that classifies articles as reliable or unreliable.</p>
+        <div class="tags"><span class="tag">NLP</span><span class="tag">Classification</span></div>
+      </div><span class="state done">Completed</span></div>
+
+      <div class="item"><div class="main">
+        <h3>Smart traffic light and hospital records system</h3>
+        <p>Two Java builds: a concurrent traffic light controller using threads and synchronisation, and a patient record system built on custom data structures.</p>
+        <div class="tags"><span class="tag">Java</span><span class="tag">Concurrency</span><span class="tag">Data structures</span></div>
+      </div><span class="state done">Completed</span></div>
+    </div>
+  </section>
+
+  <section id="awards">
+    <div class="sec-head">
+      <h2>Awards &amp; certifications</h2>
+    </div>
+    <div class="awards">
+      <div class="award-row">
+        <div class="place">3rd<small>place</small></div>
+        <div class="main">
+          <h3>NASA Space Apps Challenge, Kuala Lumpur 2025</h3>
+          <p>Placed third at the Kuala Lumpur round of NASA's international hackathon, building a working solution to a real-world challenge with a multidisciplinary team in 48 hours.</p>
+        </div>
+      </div>
+      <div class="award-row">
+        <div class="place">Bronze<small>August 2026</small></div>
+        <div class="main">
+          <h3>ICETSD 2026 Innovation &amp; Invention Competition</h3>
+          <p>For our research on proximal-based optimisation in federated learning under non-IID data.</p>
+        </div>
+      </div>
+      <div class="award-row">
+        <div class="place">Cisco<small>June 2026</small></div>
+        <div class="main">
+          <h3>CCNA: Introduction to Networks</h3>
+          <p>Cisco Networking Academy at INTI International University. Covers TCP/IP and the OSI model, IPv4 and IPv6 addressing, subnetting, Cisco IOS configuration and Packet Tracer.</p>
+          <p class="cred">Credential ID: <span>fad12b6d-d6c8-4d02-b730-b05f0f0f869e</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="research">
+    <div class="sec-head">
+      <h2>Research</h2>
+      <p>I'm interested in machine learning that works in messy, real conditions, and one day in building a language model from scratch.</p>
+    </div>
+    <div class="paper">
+      <h3>Proximal-based optimisation for federated learning under non-IID data</h3>
+      <p>Compares FedProx with FedAvg when each client holds differently distributed data, which is the normal case in real federated systems. Co-authored with Ahmed Waseem and Harprith Kaur Rajinder Singh.</p>
+      <p class="award">Bronze award, ICETSD 2026 Innovation &amp; Invention Competition (August 2026)</p>
+    </div>
+    <div class="small-grid">
+      <div class="note"><h3>ICANDIT 2026</h3><p>Abstract submitted.</p></div>
+    </div>
+  </section>
+
+  <section id="clients">
+    <div class="sec-head">
+      <h2>Web clients</h2>
+      <p>Websites, landing pages and ad campaigns I've built for businesses in the US, Kuwait, Pakistan and more.</p>
+    </div>
+    <div class="clients">
+      <span>Water World Pool &amp; Spa</span><span>Vista Media</span><span>New Success Network</span><span>SamaBuild</span><span>Mi Casa Tu Casa</span><span>French Quarter Go</span><span>Alpha Fidelis</span><span>Insula Capital Group</span><span>RAS Pharmaceuticals</span><span>SearchBerg</span><span>Fence Direct FL</span><span>Square House</span>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="sec-head"><h2>Toolkit</h2></div>
+    <div class="skills">
+      <div><h3>Data &amp; AI</h3><p>Python and Jupyter, pandas, scikit-learn, Tableau, FAISS, Ollama and local LLMs, YOLOv8, Gradio, Flask. Learning more every week.</p></div>
+      <div><h3>Software</h3><p>Java, HTML, CSS, JavaScript, MASM32 assembly, Cisco Packet Tracer, UML and systems design.</p></div>
+      <div><h3>Growth</h3><p>Meta Ads Manager, SEO, Instagram content and reels, Canva, landing pages built to convert.</p></div>
+      <div><h3>Business</h3><p>Partnerships, agent networks, sales outreach, client management, and building a brand from zero.</p></div>
+    </div>
+  </section>
+
+
+  <section id="contact" class="contact">
+    <h2>Let's talk</h2>
+    <p class="lede">Hiring for data or AI, need a website that sells, or want to study in Malaysia? Email me.</p>
+    <div class="mail">
+      <code id="email">xyousufm786@gmail.com</code>
+      <button class="btn sign" id="copy" type="button">Copy email</button>
+    </div>
+    <div class="socials" id="socials"></div>
+    <footer>© 2026 Yousuf Muhammad.</footer>
+  </section>
+</main>
+
+<script>
+/* ===== Edit your links here. Anything left empty is hidden. ===== */
+const LINKS = {
+  github:    "https://github.com/xyousufm786-hash",
+  linkedin:  "https://www.linkedin.com/in/yousuf-mohammad-94207a342/",
+  instagram: "https://www.instagram.com/yousuff.19/",
+  website:   "",   // Study Nest website URL
+  cv:        ""    // link to your CV (e.g. a Google Drive PDF)
+};
+
+// Social buttons
+const labels = {github:"GitHub", linkedin:"LinkedIn", instagram:"Instagram", website:"Study Nest website", cv:"CV"};
+const socials = document.getElementById("socials");
+for (const [k, url] of Object.entries(LINKS)) {
+  if (!url) continue;
+  const a = document.createElement("a");
+  a.className = "btn"; a.href = url; a.target = "_blank"; a.rel = "noopener"; a.textContent = labels[k];
+  socials.appendChild(a);
+}
+// Project "Code" links point at your GitHub repos once LINKS.github is set
+document.querySelectorAll("[data-repo]").forEach(a => {
+  if (LINKS.github) { a.href = LINKS.github.replace(/\/$/, "") + "/" + a.dataset.repo; a.target = "_blank"; a.rel = "noopener"; }
+  else a.parentElement.hidden = true;
+});
+
+// Copy email
+document.getElementById("copy").addEventListener("click", e => {
+  const btn = e.currentTarget, text = document.getElementById("email").textContent;
+  const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy email", 1800); };
+  (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(done).catch(() => {
+    const r = document.createRange(); r.selectNodeContents(document.getElementById("email"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Press Ctrl+C";
+  });
+});
+
+// ===== Split-flap departures board =====
+const W = {role:18, at:20, status:10};
+const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&";
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function field(text, width, cls) {
+  const f = document.createElement("span");
+  f.className = "field " + cls;
+  const t = text.padEnd(width).slice(0, width);
+  for (const c of t) {
+    const s = document.createElement("span");
+    s.className = "ch"; s.dataset.final = c; s.textContent = c;
+    f.appendChild(s);
+  }
+  return f;
+}
+document.querySelectorAll(".row[data-role]").forEach(row => {
+  row.textContent = "";
+  row.setAttribute("aria-label", `${row.dataset.role}, ${row.dataset.at}, ${row.dataset.status}`);
+  row.append(field(row.dataset.role, W.role, "f-role"));
+  const at = field(row.dataset.at, W.at, "f-at hide-sm"); row.append(at);
+  row.append(field(row.dataset.status, W.status, "status"));
+});
+if (!reduce) {
+  const cells = [...document.querySelectorAll("#rows .ch")];
+  cells.forEach((cell, i) => {
+    const final = cell.dataset.final;
+    if (final === " ") return;
+    let flips = 4 + ((i * 7) % 9);
+    const tick = () => {
+      if (flips-- <= 0) { cell.textContent = final; return; }
+      cell.textContent = GLYPHS[(Math.random() * GLYPHS.length) | 0];
+      setTimeout(tick, 55);
+    };
+    setTimeout(tick, (i % 48) * 12);
+  });
+}
+</script>
